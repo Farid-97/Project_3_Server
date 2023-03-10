@@ -18,6 +18,9 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Username is required."],
     },
+    imgUrl: {
+      type:String
+    },
     post: [{ type: Schema.Types.ObjectId, ref:'Post'}],
     favourites: [{ type: Schema.Types.ObjectId, ref:'Post'}],
     following: [{type: Schema.Types.ObjectId, ref:'User'}]
