@@ -10,9 +10,9 @@ const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 //Create a Post and put the ID in the User Database
 
 router.post("/post", isAuthenticated, async (req, res, next) => {
-  const { title /* , imgUrl */, description, tags } = req.body;
+  const { title, imgUrl, description, tags } = req.body;
   try {
-    const post = await Post.create({ title /* , imgUrl */, description, tags });
+    const post = await Post.create({ title, imgUrl, description, tags });
     await User.findByIdAndUpdate(req.payload._id, {
       $push: { post: post._id },
     });
@@ -90,7 +90,7 @@ router.delete("/post/:id", async (req, res, next) => {
 
   try {
     const post = await Post.findById(id);
-    await Comment.deleteMany({ _id: post.tasks });
+    await Comment.deleteMany({ postId: id });
 
     await Post.findByIdAndDelete(id);
     res.json({ message: `Project with the id ${id} was successfully deleted` });
@@ -108,9 +108,9 @@ router.put("/favourites/:id", isAuthenticated, async (req, res, next) => {
   }
   try {
     await User.findByIdAndUpdate(req.payload._id, {
-      $push: { favourites: id }
+      $push: { favourites: id },
     });
-    const user = await User.findById(req.payload._id)
+    const user = await User.findById(req.payload._id);
     res.json(user);
   } catch (error) {
     res.json(error);
@@ -119,20 +119,24 @@ router.put("/favourites/:id", isAuthenticated, async (req, res, next) => {
 
 // Pull ID from the user favourites array
 
-router.delete("/deleteFavourites/:id", isAuthenticated, async (req, res, next) => {
-  const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    res.json("The provided id is not valid");
+router.delete(
+  "/deleteFavourites/:id",
+  isAuthenticated,
+  async (req, res, next) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.json("The provided id is not valid");
+    }
+    try {
+      await User.findByIdAndUpdate(req.payload._id, {
+        $pull: { favourites: id },
+      });
+      const user = await User.findById(req.payload._id);
+      res.json(user);
+    } catch (error) {
+      res.json(error);
+    }
   }
-  try {
-    await User.findByIdAndUpdate(req.payload._id, {
-      $pull: { favourites: id },
-    });
-    const user = await User.findById(req.payload._id);
-    res.json(user);
-  } catch (error) {
-    res.json(error);
-  }
-})
+);
 
 module.exports = router;

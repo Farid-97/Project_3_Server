@@ -14,8 +14,13 @@ router.post("/createComment/:id", isAuthenticated, async (req, res, next) => {
   try {
     const newComment = await Comment.create({ comment });
     await Comment.findByIdAndUpdate(newComment._id, {
-      $push: { userId: idUser },
+      $push: { userId: idUser }
     });
+
+    await Comment.findByIdAndUpdate(newComment._id, {
+      $push: { postId: id }
+    });
+
     await Post.findByIdAndUpdate(id, {
       $push: { comments: newComment._id },
     });
@@ -41,6 +46,7 @@ router.delete("/deleteComment/:postId/:commentId", async (req, res, next) => {
     await Post.findByIdAndUpdate(postId, {
       $pull: { comments: commentId },
     });
+    await Comment.findByIdAndRemove(commentId)
     const post = await Post.findById(postId);
     res.json(post);
   } catch (error) {
@@ -48,4 +54,17 @@ router.delete("/deleteComment/:postId/:commentId", async (req, res, next) => {
   }
 });
 
+// edit a comment
+
+router.put("/editComment/:id", async (req, res, next) => {
+  const { id } = req.params;
+  const {comment} = req.body;
+  try {
+    await Post.findByIdAndUpdate(id, {comment: comment});
+    const post = await Post.findById(id);
+    res.json(post);
+  } catch (error) {
+    res.json(error);
+  }
+});
 module.exports = router;
