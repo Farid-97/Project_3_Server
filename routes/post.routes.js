@@ -3,17 +3,19 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Post = require("../models/Post.model");
 const Comment = require("../models/Comment.model");
-const User = require('../models/User.model')
+const User = require("../models/User.model");
 const fileUploader = require("../config/cloudinary.config");
 const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 //Create a Post and put the ID in the User Database
 
 router.post("/post", isAuthenticated, async (req, res, next) => {
-  const { title, img, description, tags } = req.body;
+  const { title /* , imgUrl */, description, tags } = req.body;
   try {
-    const post = await Post.create({ title, img, description, tags });
-    await User.findByIdAndUpdate(req.payload._id , { $push: { post: post._id } })
+    const post = await Post.create({ title /* , imgUrl */, description, tags });
+    await User.findByIdAndUpdate(req.payload._id, {
+      $push: { post: post._id },
+    });
     console.log(post);
     res.json(post);
   } catch (error) {
@@ -41,7 +43,7 @@ router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
 
 router.get("/post", async (req, res, next) => {
   try {
-    const Posts = await Posts.find();
+    const Posts = await Post.find();
     res.json(Posts);
   } catch (error) {
     res.json(error);
@@ -99,19 +101,38 @@ router.delete("/post/:id", async (req, res, next) => {
 
 // Add a post as favourite in the favourite section of the user
 
-router.put('/favourites/:id', isAuthenticated, async (req, res, next) => {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      res.json("The provided id is not valid");
-    }
-    try {
-      const post = await Post.findById(id);
-      const updatedUser = await User.findByIdAndUpdate(req.payload._id, {$push: { favourites: post._id } })
-  
-      res.json(updatedUser);
-    } catch (error) {
-      res.json(error);
-    }
-  })
+router.put("/favourites/:id", isAuthenticated, async (req, res, next) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.json("The provided id is not valid");
+  }
+  try {
+    await User.findByIdAndUpdate(req.payload._id, {
+      $push: { favourites: id }
+    });
+    const user = await User.findById(req.payload._id)
+    res.json(user);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+// Pull ID from the user favourites array
+
+router.delete("/deleteFavourites/:id", isAuthenticated, async (req, res, next) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.json("The provided id is not valid");
+  }
+  try {
+    await User.findByIdAndUpdate(req.payload._id, {
+      $pull: { favourites: id },
+    });
+    const user = await User.findById(req.payload._id);
+    res.json(user);
+  } catch (error) {
+    res.json(error);
+  }
+})
 
 module.exports = router;
