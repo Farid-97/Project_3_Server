@@ -15,6 +15,9 @@ const cors = require("cors");
 
 const FRONTEND_URL = process.env.ORIGIN || "http://localhost:3000";
 
+// Connects the mongo uri to maintain the same naming structure
+const MONGO_URI =
+  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/pinterest";
 // Middleware configuration
 module.exports = (app) => {
   // Because this will be hosted on a server that will accept requests from outside and it will be hosted ona server with a `proxy`, express needs to know that it should trust that setting.
