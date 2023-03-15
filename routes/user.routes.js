@@ -33,8 +33,11 @@ router.get("/getUser/:id", isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.put("/getUser", isAuthenticated, async (req, res, next) => {
+router.put("/editUser", isAuthenticated, async (req, res, next) => {
+  const { username, imgUrl } = req.body;
   try {
+   const updatedUser = await User.findByIdAndUpdate(req.payload._id, {username, imgUrl}, {new: true}); 
+   res.json(updatedUser);
   } catch (error) {
     res.json(error);
   }
