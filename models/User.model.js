@@ -19,11 +19,11 @@ const userSchema = new Schema(
       required: [true, "Username is required."],
     },
     imgUrl: {
-      type:String
+      type: String,
     },
-    post: [{ type: Schema.Types.ObjectId, ref:'Post'}],
-    favourites: [{ type: Schema.Types.ObjectId, ref:'Post'}],
-    following: [{type: Schema.Types.ObjectId, ref:'User'}]
+    post: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    favourites: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
