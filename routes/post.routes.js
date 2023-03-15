@@ -16,6 +16,7 @@ router.post("/post", isAuthenticated, async (req, res, next) => {
     await User.findByIdAndUpdate(req.payload._id, {
       $push: { post: post._id },
     });
+    await Post.findByIdAndUpdate(post._id, { $push: {createdBy: req.payload._id}})
     console.log(post);
     res.json(post);
   } catch (error) {
@@ -55,7 +56,7 @@ router.get("/post", async (req, res, next) => {
 router.get("/post/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    const post = await Post.findById(id).populate("comments");
+    const post = await Post.findById(id).populate("comments").populate("createdBy");
     res.json(post);
   } catch (error) {
     res.json(error);
@@ -91,7 +92,9 @@ router.delete("/post/:id", async (req, res, next) => {
   try {
     const post = await Post.findById(id);
     await Comment.deleteMany({ postId: id });
-
+    await User.findByIdAndUpdate(req.payload._id, {
+      $pull: { favourites: id },
+    })
     await Post.findByIdAndDelete(id);
     res.json({ message: `Project with the id ${id} was successfully deleted` });
   } catch (error) {
@@ -138,5 +141,26 @@ router.delete(
     }
   }
 );
-
+router.get("/checkFavourite/:id", isAuthenticated,
+async (req, res, next) => {
+  const { id } = req.params;
+  let verify = false;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.json("The provided id is not valid");
+  }
+  try { 
+    const response = await User.findById(req.payload._id)
+    for (let i = 0; i < response.data.favourites.length; i++){
+      if (id === response.data.favourites[i]._id){
+        verify = true;
+      } else {
+        continue;
+      }
+    }
+    res.json(verify);
+  }
+  catch (error) {
+    res.json(error);
+  }
+})
 module.exports = router;

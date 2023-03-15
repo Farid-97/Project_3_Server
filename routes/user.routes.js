@@ -8,7 +8,7 @@ const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 router.get("/getUser", isAuthenticated, async (req, res, next) => {
   try {
-    const user = await User.findById(req.payload._id).populate("post");
+    const user = await User.findById(req.payload._id).populate("post").populate("favourites");
     res.json(user);
   } catch (error) {
     res.json(error);
