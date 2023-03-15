@@ -19,11 +19,12 @@ const userSchema = new Schema(
       required: [true, "Username is required."],
     },
     imgUrl: {
-      type:String
+      type: String,
+      default: 'https://assets.reedpopcdn.com/star-wars-is-grogu-related-to-yoda.webp/BROK/resize/1200x1200%3E/format/jpg/quality/70/star-wars-is-grogu-related-to-yoda.webp'
     },
-    post: [{ type: Schema.Types.ObjectId, ref:'Post'}],
-    favourites: [{ type: Schema.Types.ObjectId, ref:'Post'}],
-    following: [{type: Schema.Types.ObjectId, ref:'User'}]
+    post: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    favourites: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
