@@ -8,24 +8,20 @@ const Comment = require("../models/Comment.model");
 // Create a comment on a Post
 
 router.post("/createComment/:id", isAuthenticated, async (req, res, next) => {
+  
   const { id } = req.params;
+
   const { comment } = req.body;
+  console.log(comment);
+
   const idUser = req.payload._id;
+
   try {
-    const newComment = await Comment.create({ comment });
-    await Comment.findByIdAndUpdate(newComment._id, {
-      $push: { userId: idUser }
-    });
-
-    await Comment.findByIdAndUpdate(newComment._id, {
-      $push: { postId: id }
-    });
-
-    await Post.findByIdAndUpdate(id, {
-      $push: { comments: newComment._id },
-    });
-    const post = await Post.findById(id).populate("comments");
-    res.json(post);
+    const newComment = await Comment.create({comment});
+    await Post.findByIdAndUpdate(id, {$push: { comments: newComment._id }})
+    await Comment.findByIdAndUpdate(newComment._id, {$push: { userId: idUser}})
+    await Comment.findByIdAndUpdate(newComment._id, {$push: { postId: id }})
+    res.json(newComment)
   } catch (error) {
     res.json(error);
   }

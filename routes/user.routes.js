@@ -8,7 +8,7 @@ const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 router.get("/getUser", isAuthenticated, async (req, res, next) => {
   try {
-    const user = await User.findById(req.payload._id).populate("post").populate("favourites");
+    const user = await User.findById(req.payload._id).populate("post").populate("favourites").populate("following");
     res.json(user);
   } catch (error) {
     res.json(error);
@@ -25,9 +25,8 @@ router.get("/getUser/:id", isAuthenticated, async (req, res, next) => {
         path: "favourites",
         populate: { path: "comments", model: "Comment" },
       });
-
-    const currentUser = await User.findById(req.payload._id);
-    res.json({ specificUser, currentUser });
+      
+    res.json(specificUser);
   } catch (error) {
     res.json(error);
   }
@@ -43,4 +42,23 @@ router.put("/editUser", isAuthenticated, async (req, res, next) => {
   }
 });
 
+router.put("/follow/:id", isAuthenticated, async(req, res, next) => {
+  const {id} = req.params;
+  try {
+    const response = await User.findByIdAndUpdate(req.payload._id, {$push: {following: id}}, {new: true})
+    res.json(response)
+  } catch (error) {
+    res.json(error)
+  }
+})
+
+router.delete('/removeFollow/:id', isAuthenticated, async(req, res, next) => {
+  const { id } = req.params;
+  try {
+    const response = await User.findByIdAndUpdate(req.payload._id, {$pull: {following: id}}, {new: true})
+    res.json(response)
+  } catch (error) {
+    res.json(error)
+  }
+})
 module.exports = router;
